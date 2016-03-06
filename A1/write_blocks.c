@@ -9,7 +9,6 @@ int write_file(char* input_file, int block_size) {
     int records_per_block;
     FILE *fp_write;
     int tokens_found;
-    char *file_name;
     Record *buffer;
 
     /* initialize the block */
@@ -31,13 +30,11 @@ int write_file(char* input_file, int block_size) {
         if (tokens_found == 0) {
             break;
         }
-        count += 1;
         /* flush buffer when full */
         fwrite(buffer, sizeof(Record), records_per_block, fp_write);
         /* force data to disk */
         fflush(fp_write);
     }
-    printf("count: %d\n", count);
 
     fclose(fp_read);
     fclose(fp_write);
