@@ -1,68 +1,50 @@
 #include "disk_ram.h"
 
-/* return the number of lines */
-int get_lines() {
-    int line_number = 0;
-    FILE *fp_read;
-    char current_line[MAX_CHARS_PER_LINE];
+FILE *fp_read;
 
-    char *file_name = "/test_dataset/g_plusAnonymized.csv";
-    /* open file for reading */
-    if (!(fp_read=fopen(file_name, "r"))) {
-        printf("Couldn't open file \"%s\" for reading \n", file_name);
-        return (-1);
+/* initialize fp_read file */
+void read_init(char* input_file) {
+    if (!(fp_read=fopen(input_file, "r"))) {
+        printf("Couldn't open file \"%s\" for reading! \n", input_file);
+        exit(0);
     }
-    
-    /* record the number of lines */
-    while (fgets(current_line, MAX_CHARS_PER_LINE, fp_read)!=NULL) {
-        line_number += 1;
-    }
-
-    fclose(fp_read);
-
-    return line_number;
 }
 
 
-/* return -1 if there is an error */
-int read_file() {
+/* read a block of records from the file and store into the buffer */
+int read_file(int records_per_block, Record *buffer) {
     char current_line[MAX_CHARS_PER_LINE];
-    FILE *fp_read;
     char *tokens;
     int uid_mark=1, count=0;
 
-    char *file_name = "/test_dataset/g_plusAnonymized.csv";
-
-    /* open text file for reading */
-    if (!(fp_read=fopen(file_name, "r"))) {
-        printf("Couldn't open file \"%s\" for reading \n", file_name);
-        return (-1);
-    }
-
-    /* initialize user record to store all the lines */
-    Record *user_record = (Record *)malloc(sizeof(Record) * get_lines());
+    int tokens_found = 0;
 
     /* reading lines */
     while (fgets(current_line, MAX_CHARS_PER_LINE, fp_read)!= NULL) {
+        if (tokens_found == 0) {
+            tokens_found = 1;
+        }
         tokens = strtok(current_line, ",");
         while (tokens) {
             if (uid_mark==1) {
-                (user_record+count)->uid1 = atoi(tokens);
+                (buffer+count)->uid1 = atoi(tokens);
             } else {
-                (user_record+count)->uid2 = atoi(tokens);
+                (buffer+count)->uid2 = atoi(tokens);
             }
             uid_mark += 1;
             tokens = strtok(NULL, " ");
         }
         uid_mark = 1;
         count += 1;
+        if (count == records_per_block) {
+            break;
+        }
     }
 
-    fclose(fp_read);
-    
-    return (1);
+    return tokens_found;
+
 }
 
-void main() {
-    read_file();
-}
+
+
+
