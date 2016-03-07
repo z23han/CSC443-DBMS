@@ -19,4 +19,5 @@ void read_init(char *input_file);
 int read_file(int records_per_block, Record *buffer);
 int write_file(char *input_file, int size);
 int write_lines(char *input_file);
+int seq_access(int block_size, char* file_name);
 
