@@ -13,6 +13,14 @@ typedef struct record {
 } Record;
 
 
+typedef struct user {
+    int uid;
+    int max;
+    int sum;
+    int num;
+} User;
+
+
 extern FILE *fp_read;
 
 void read_init(char *input_file);
@@ -23,4 +31,6 @@ int write_file(char *input_file, int size);
 int write_lines(char *input_file);
 int seq_access(int block_size, char* file_name);
 int seq_ram(char* file_name);
+void get_max_ave(Record *buffer, int num_of_records, FILE *fp_write, User *old_user);
+
 

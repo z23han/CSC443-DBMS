@@ -1,12 +1,53 @@
 #include "disk_ram.h"
 #include <sys/timeb.h>
 
+
+/* 
+ *  Get the max and average of the user
+ * */
+void get_max_ave(Record *buffer, int num_of_records, FILE *fp_write, User *old_user) {
+    int i;
+    int old_uid = old_user->uid;
+    int old_max = old_user->max;
+    int old_sum = old_user->sum;
+    int old_num = old_user->num;
+    Record *new_record;
+    int new_uid, new_uid2;
+    int ave;
+    for (i = 0; i < num_of_records; i++) {
+        Record *new_record = (Record *)(buffer + i);
+        new_uid = new_record->uid1;
+        new_uid2 = new_record->uid2;
+        /* if new_uid==old_uid, check and update user information */
+        if (new_uid == old_uid) {
+            /* check max value */
+            if (new_uid2 > old_max) {
+                old_user->max = new_uid2;
+            }
+            /* update num and sum */
+            old_user->sum += new_uid2;
+            old_user->num += 1;
+        }/* else write to the disk and create a new user */ else {
+            if (old_uid != 0) {
+                ave = old_user->sum / old_user->num;
+                fprintf(fp_write, "uid: %d  max: %d  ave: %d\n", old_uid, old_user->max, ave);
+            }
+            old_user->uid = new_uid;
+            old_user->max = new_uid2;
+            old_user->sum = new_uid2;
+            old_user->num = 1;
+            old_uid = new_uid;
+        }
+    } 
+}
+
+
 int seq_access(int block_size, char* file_name) {
     int records_per_block = block_size/sizeof(Record);
     int time_spent_ms;
     struct timeb t_begin, t_end;
 
-    FILE *fp_read;
+    FILE *fp_read, *fp_write;
 
     Record *buffer = (Record *)calloc(records_per_block, sizeof(Record));
 
@@ -15,11 +56,27 @@ int seq_access(int block_size, char* file_name) {
         exit(0);
     }
 
+    char *write_file = "max_ave_disk.cvs";
+    if (!(fp_write = fopen(write_file, "wb"))) {
+        printf("Couldn't open the file \"%s\" for writing!\n", write_file);
+        exit(0);
+    }
+
+    /* initialize user struct */
+    User* record_user = (User *)malloc(sizeof(User));
+    record_user->uid = 0;
+    record_user->max = 0;
+    record_user->sum = 0;
+    record_user->num = 0;
+    int uid;
+
     int count = 0;
     /* start timing */
     ftime(&t_begin);
     while (1) {
         int result = fread(buffer, sizeof(Record), records_per_block, fp_read);
+        /* get_max_ave function write the record information to the disk for 1 block */
+        get_max_ave(buffer, result, fp_write, record_user);
         if (result != records_per_block) {
             break;
         }
