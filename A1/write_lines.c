@@ -9,7 +9,7 @@ int write_lines(char *input_file) {
     char *file_path = "test_dataset/g_plusAnonymized.csv";
 
     /* initialize read buffer */
-    int total_lines = get_file_lines(file_path);
+    unsigned long total_lines = get_file_lines(file_path);
     Record *read_buffer = (Record *)malloc(sizeof(Record)*total_lines);
 
     /* initialize write buffer */
@@ -23,7 +23,7 @@ int write_lines(char *input_file) {
     read_init("test_dataset/g_plusAnonymized.csv");
     read_entire_file(read_buffer);
     
-    int write_buffer_pos = 0;
+    unsigned long write_buffer_pos = 0;
 
     while (write_buffer_pos <= total_lines) {
         /* point the write buffer to next position */

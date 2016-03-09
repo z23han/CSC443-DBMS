@@ -11,9 +11,9 @@ void read_init(char* input_file) {
 }
 
 
-int get_file_lines(char *input_file) {
+unsigned long get_file_lines(char *input_file) {
     FILE *fp;
-    int lines = 0;
+    unsigned long lines = 0;
     char current_line[MAX_CHARS_PER_LINE];
 
     if (!(fp = fopen(input_file, "r"))) {
@@ -34,7 +34,8 @@ int get_file_lines(char *input_file) {
 void read_entire_file(Record *buffer) {
     char current_line[MAX_CHARS_PER_LINE];
     char *tokens;
-    int uid_mark = 1, count = 0;
+    int uid_mark = 1; 
+    unsigned long count = 0;
 
     /* read lines */
     while (fgets(current_line, MAX_CHARS_PER_LINE, fp_read)!= NULL) {
@@ -55,10 +56,11 @@ void read_entire_file(Record *buffer) {
 
 
 /* read a block of records from the file and store into the buffer */
-int read_file_block(int records_per_block, Record *buffer) {
+int read_file_block(unsigned long records_per_block, Record *buffer) {
     char current_line[MAX_CHARS_PER_LINE];
     char *tokens;
-    int uid_mark=1, count=0;
+    int uid_mark=1; 
+    unsigned long count=0;
 
     int tokens_found = 0;
 

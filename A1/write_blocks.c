@@ -4,16 +4,16 @@ FILE *fp_read;
 
 
 /* return -1 if failed to write to the buffer */
-int write_file(char* input_file, int block_size) {
+int write_file(char* input_file, unsigned long block_size) {
     /*int sizes[8] = {512, KB, 4*KB, 16*KB, 21*KB, 1*MB, 2*MB, 4*MB};*/
-    int records_per_block;
+    unsigned long records_per_block;
     FILE *fp_write;
     Record *read_buffer, *write_buffer;
 
     char *file_path = "test_dataset/g_plusAnonymized.csv";
 
     /* initialize read buffer */
-    int total_lines = get_file_lines(file_path);
+    unsigned long total_lines = get_file_lines(file_path);
     read_buffer = (Record *)malloc(sizeof(Record)*total_lines);
 
     /* initialize write buffer */
@@ -30,7 +30,7 @@ int write_file(char* input_file, int block_size) {
     read_init(file_path);
     read_entire_file(read_buffer);
 
-    int write_buffer_pos = 0;
+    unsigned long write_buffer_pos = 0;
 
     while (write_buffer_pos <= total_lines) {
         /* point the write buffer to the correct position */
