@@ -16,8 +16,11 @@ typedef struct record {
 extern FILE *fp_read;
 
 void read_init(char *input_file);
-int read_file(int records_per_block, Record *buffer);
+int get_file_lines(char *input_file);
+int read_file_block(int records_per_block, Record *buffer);
+void read_entire_file(Record *buffer);
 int write_file(char *input_file, int size);
 int write_lines(char *input_file);
 int seq_access(int block_size, char* file_name);
+int seq_ram(char* file_name);
 

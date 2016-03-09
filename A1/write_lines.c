@@ -5,9 +5,15 @@ FILE *fp_read;
 
 int write_lines(char *input_file) {
     FILE *fp_write;
-    int tokens_found;
 
-    Record *buffer = (Record *)malloc(sizeof(Record));
+    char *file_path = "test_dataset/g_plusAnonymized.csv";
+
+    /* initialize read buffer */
+    int total_lines = get_file_lines(file_path);
+    Record *read_buffer = (Record *)malloc(sizeof(Record)*total_lines);
+
+    /* initialize write buffer */
+    Record *write_buffer = read_buffer;
 
     if (!(fp_write = fopen(input_file, "wb"))) {
         printf("Couldn't open file \"%s\" for writing! \n", input_file);
@@ -15,20 +21,23 @@ int write_lines(char *input_file) {
     }
 
     read_init("test_dataset/g_plusAnonymized.csv");
+    read_entire_file(read_buffer);
     
-    while (1) {
-        tokens_found = read_file(1, buffer);
-        if (tokens_found == 0) {
-            break;
-        }
-        fwrite(buffer, sizeof(Record), 1, fp_write);
-        fflush(fp_write);
+    int write_buffer_pos = 0;
+
+    while (write_buffer_pos <= total_lines) {
+        /* point the write buffer to next position */
+        write_buffer = (Record *)(read_buffer + write_buffer_pos);
+        /* flush write buffer */
+        fwrite(write_buffer, sizeof(Record), 1, fp_write);
+        /* update write buffer position */
+        write_buffer_pos += 1;
     }
 
     fclose(fp_read);
     fclose(fp_write);
 
-    free(buffer);
+    free(read_buffer);
 
     return 1;
 }

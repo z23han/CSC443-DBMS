@@ -8,38 +8,45 @@ int write_file(char* input_file, int block_size) {
     /*int sizes[8] = {512, KB, 4*KB, 16*KB, 21*KB, 1*MB, 2*MB, 4*MB};*/
     int records_per_block;
     FILE *fp_write;
-    int tokens_found;
-    Record *buffer;
+    Record *read_buffer, *write_buffer;
 
-    /* initialize the block */
+    char *file_path = "test_dataset/g_plusAnonymized.csv";
+
+    /* initialize read buffer */
+    int total_lines = get_file_lines(file_path);
+    read_buffer = (Record *)malloc(sizeof(Record)*total_lines);
+
+    /* initialize write buffer */
     records_per_block = block_size/sizeof(Record);
-    /* allocate buffer for 1 block */
-    buffer = (Record *)calloc(records_per_block, sizeof(Record));
+    write_buffer = read_buffer;
 
+    /* open file for writing */
     if (!(fp_write = fopen(input_file, "wb"))) {
         printf("Couldn't open file \"%s\" for writing \n", input_file);
         exit(0);
     }
 
-    read_init("test_dataset/g_plusAnonymized.csv");
-    int count = 0;
+    /* read the file */
+    read_init(file_path);
+    read_entire_file(read_buffer);
 
-    while (1) {
-        tokens_found = read_file(records_per_block, buffer);
-        /*printf("tokens_found: %d\n", tokens_found);*/
-        if (tokens_found == 0) {
-            break;
-        }
-        /* flush buffer when full */
-        fwrite(buffer, sizeof(Record), records_per_block, fp_write);
-        /* force data to disk */
+    int write_buffer_pos = 0;
+
+    while (write_buffer_pos <= total_lines) {
+        /* point the write buffer to the correct position */
+        write_buffer = (Record *)(read_buffer + write_buffer_pos);
+        /* flush write buffer */
+        fwrite(write_buffer, sizeof(Record), records_per_block, fp_write);
+        /* force write buffer to disk */
         fflush(fp_write);
+        /* update write buffer position */
+        write_buffer_pos += records_per_block;
     }
 
     fclose(fp_read);
     fclose(fp_write);
 
-    free(buffer);
+    free(read_buffer);
 
     return 1;
 
