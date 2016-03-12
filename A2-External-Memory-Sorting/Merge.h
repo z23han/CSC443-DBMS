@@ -54,6 +54,7 @@ typedef struct MergeManager { //Bookkeeping: keeps track of all necessary variab
 	InputBuffer *inputBuffers; //array of buffers to buffer separate runs
 } MergeManager;
 
+int initMerger(char *inputFile, char *outputFile, int chunkNumber); // initialize MergeManager
 int mergeRuns (MergeManager *merger); //merges all runs into a single sorted list
 int initInputBuffers(MergeManager *merger); //initial fill of input buffers with elements of each run
 int initHeap(MergeManager *merger); //inserts into heap one element from each buffer - to keep the smallest on top
