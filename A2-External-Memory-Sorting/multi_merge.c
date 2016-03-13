@@ -91,16 +91,24 @@ int mergeRuns(MergeManager *merger) {
         }
 
         /* add record to outputBuffer */
-        runID = smallest.run_id;
-        uid1 = smallest.uid1;
-        uid2 = smallest.uid2;
+        runID = smallest->run_id;
+        uid1 = smallest->uid1;
+        uid2 = smallest->uid2;
         int currentPosition = merger->currentPositionInOutputBuffer++;
         Record *outputBuffer = merger->outputBuffer;
         (outputBuffer+currentPosition)->uid1 = uid1;
         (outputBuffer+currentPosition)->uid2 = uid2;
 
-        /*  */
+        /* get the next Record from inputBuffer */
         result = getNextRecord(merger, runID, next);
+        
+        /* if next element exists */
+        if (next != NULL) {
+            /* insert into heap */
+            if (insertIntoHeap(merger, smallest->run_id, next)!=0) {
+                return 1;
+            }
+        }
     }
 }
 

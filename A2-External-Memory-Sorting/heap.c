@@ -65,7 +65,7 @@ int getNextRecord(MergeManager *merger, int run_id, Record *result) {
             return 1;
         }
         
-        /* to be continued ....... */
+        /* else load new data into buffer from inputFP */
         FILE *inputFP = merger->inputFP;
         int filePosition = inputBuffer->currentPositionInFile;
         fseek(inputFP, filePosition, SEEK_SET);
@@ -76,6 +76,10 @@ int getNextRecord(MergeManager *merger, int run_id, Record *result) {
         }
         fseek(inputFP, 0, SEEK_SET);
         /* update inputBuffer */
+        inputBuffer->currentPositionInFile += loadSize;
+        inputBuffer->currentBufferPosition = 0;
+        inputBuffer->totalElements += loadSize;
+        inputBuffer->buffer = (Record *)buffer;
     }
 
     return 0;
@@ -90,19 +94,89 @@ int insertIntoHeap(MergeManager *merger, int run_id, Record *newRecord) {
     int heapCapacity = merger->heapCapacity;
     /* if heap size is smaller than heap capacity, just insert */
     if (heapSize < heapCapacity) {
+        if (pushIntoHeap(heap, newRecord, run_id)!=0) {
+            fprintf(stderr, "Failed to push into heap!\n");
+            exit(0);
+        }
+        /* update merger information */
+        merger->heapSize++;
         
     } 
-    /* else if heap size equals to heap capacity, insert and remove */
-    else if (heapSize == heapCapacity) {
-        
-    }
-    else {
+    /* heap size should be smaller than capacity */
+    else  {
         fprintf(stderr, "heap size larger than heap capacity! Error!\n");
         exit(0);
     }
 
     return 0;
 }
+
+
+/* push element into the heap */
+int pushIntoHeap(HeapRecord *heap, Record *oneRecord, int runID) {
+
+    int uid2 = oneRecord->uid2;
+    HeapRecord *first = heap;
+
+    if (first == NULL) {
+        first->uid1 = oneRecord->uid1;
+        first->uid2 = oneRecord->uid2;
+        first->run_id = runID;
+    }
+
+    while (first != NULL) {
+        if (first->uid2 > uid2) {
+            if (addHeapRecordToTop(first, oneRecord, runID)!=0) {
+                fprintf(stderr, "Failed to insert into heap!\n");
+                exit(0);
+            }
+            return 0;
+        }
+        first++;
+    }
+    /* add to the end */
+    first->uid1 = oneRecord->uid1;
+    first->uid2 = oneRecord->uid2;
+    first->run_id = runID;
+
+    return 0;
+}
+
+
+/* add the element from record to the top of the heap */
+int addHeapRecordToTop(HeapRecord *heap, Record *oneRecord, int runID) {
+
+    int uid1_next, uid2_next, uid1_now, uid2_now, run_id_next, run_id_now;
+    uid1_next = heap->uid1;
+    uid2_next = heap->uid2;
+    run_id_next = heap->run_id;
+    uid1_now = oneRecord->uid1;
+    uid2_now = oneRecord->uid2;
+    run_id_now = runID;
+    heap->uid1 = uid1_now;
+    heap->uid2 = uid2_now;
+    heap->run_id = run_id_now;
+    
+    heap = heap + 1;
+    /* loop the rest of the heap and update uid */
+    do {
+        /* store uid1 and uid2 to a place */
+        uid1_now = uid1_next;
+        uid2_now = uid2_next;
+        run_id_now = run_id_next;
+        uid1_next = heap->uid1;
+        uid2_next = heap->uid2;
+        run_id_next = heap->run_id;
+        heap->uid1 = uid1_now;
+        heap->uid2 = uid2_now;
+        heap->run_id = run_id_now;
+        
+        heap ++;
+    } while(heap != NULL);
+
+    return 0;
+}
+
 
 
 /* removes the smallest element from the heap, and restores heap order */
