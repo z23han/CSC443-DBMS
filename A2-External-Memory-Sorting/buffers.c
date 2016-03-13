@@ -34,3 +34,17 @@ int initInputBuffers(MergeManager *merger) {
 }
 
 
+/* flush output buffer */
+int flushOutputBuffer(MergeManager *merger) {
+    Record *outputBuffer = merger->outputBuffer;
+    int currentPositionInOutputBuffer = merger->currentPositionInOutputBuffer;
+    /* write to the disk */
+    FILE *outputFP = merger->outputFP;
+    fwrite(outputBuffer, sizeof(Record), currentPositionInOutputBuffer, outputFP);
+    fflush(outputBuffer);
+    return 0;
+}
+
+
+
+

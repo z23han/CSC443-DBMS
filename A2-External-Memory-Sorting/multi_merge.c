@@ -109,7 +109,25 @@ int mergeRuns(MergeManager *merger) {
                 return 1;
             }
         }
+        if (result == 1) {
+            return 1;
+        }
+        
+        /* staying on the last slot of the output buffer - next will cause overflow */
+        if (flushOutputBuffer(merger)!=0) {
+            return 1;
+        }
+        merger->currentPositionInOutputBuffer = 0;
+        
+        /* flush what remains in outputBuffer */
+        if (merger->currentPositionInOutputBuffer > 0) {
+            if (flushOutputBuffer(merger)!= 0) {
+                return 1;
+            }
+        }
     }
+
+    return 0;
 }
 
 
